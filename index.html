@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chek</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: flex-start;
+            align-items: left;
+            background-color: #f8f8f8;
+        }
+
+        .receipt-container {
+            justify-content: flex-start;
+            align-items: left;
+        }
+
+        .receipt {
+            width: 65mm;
+            padding: 0px;
+            background-color: white;
+        }
+
+        .receipt-header {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .receipt-subheader {
+            font-size: 12px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .line {
+            border-bottom: 1px dashed black;
+            margin: 10px 0;
+        }
+
+        .transaction-details {
+            font-size: 10px;
+            text-align: left;
+            margin-bottom: 10px;
+        }
+
+        .transaction-details div {
+            display: flex;
+            justify-content: space-between;
+            margin: 2px 5px;
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            border-bottom: 1px dashed black;
+            margin: 0 5px 5px 5px;
+            padding-bottom: 5px;
+            font-size: 12px;
+        }
+
+        .item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            margin: 3px 5px;
+            gap: 4px;
+        }
+
+        .item-name {
+            text-align: left;
+            flex-grow: 1;
+            word-break: break-word;
+        }
+
+        .item-quantity,
+        .item-price {
+            min-width: 60px;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .item-number {
+            margin-right: 5px;
+            font-weight: normal;
+            white-space: nowrap;
+        }
+
+        .total-section {
+            font-weight: bold;
+            font-size: 12px !important;
+            margin-top: 10px;
+        }
+
+        .total-section .item {
+            font-size: 11px;
+        }
+
+        .total-section .item span:last-child {
+            white-space: nowrap;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 10px;
+            text-align: center;
+            font-weight: normal;
+        }
+    </style>
+</head>
+<body onfocus="window.close()">
+    <div class="receipt-container">
+        <div class="receipt" id="receipt"></div>
+    </div>
+
+    <script>
+        var params = new URLSearchParams(window.location.search);
+
+        function getList(name) {
+            var v = params.get(name);
+            return v === null ? [] : v.split(',').map(function (s) { return s.trim(); });
+        }
+
+        function getVal(name) {
+            return (params.get(name) || '').trim();
+        }
+
+        function cleanNum(v) {
+            if (v === null || typeof v === 'undefined') return 0;
+            var n = parseFloat(String(v).replace(/[,\s\u00A0]/g, ''));
+            return isNaN(n) ? 0 : n;
+        }
+
+        function intval(v) {
+            return Math.round(cleanNum(v));
+        }
+
+        function numberFormat(v) {
+            var n = Math.round(cleanNum(v));
+            return n.toLocaleString('en-US', { maximumFractionDigits: 0 });
+        }
+
+        function esc(s) {
+            return String(s).replace(/[&<>"']/g, function (c) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+            });
+        }
+
+        // ---- Build the item list ----
+        var tovar    = getList('tovar');
+        var miqdori  = getList('miqdori');
+        var jami     = getList('jami');
+        var narxi    = getList('narxi');
+        var datetime = getList('datetime');
+
+        var result = [];
+        for (var i = 0; i < tovar.length; i++) {
+            if (!tovar[i]) continue;
+            result.push({
+                tovar: tovar[i],
+                miqdori: miqdori[i] || '',
+                jami: jami[i] || 0,
+                narxi: narxi[i] || 0,
+                datetime: datetime[i] || ''
+            });
+        }
+
+        // Sort by datetime
+        result.sort(function (a, b) {
+            var ta = Date.parse(a.datetime) || 0;
+            var tb = Date.parse(b.datetime) || 0;
+            return ta - tb;
+        });
+
+        var xuzumakName = getVal('xuzumak') || getVal('mijoz');
+
+        // ---- Render the receipt ----
+        var html = '';
+        html += '<div class="receipt-header">Gold Metall Tunkafon Profnastil markazi</div>';
+        html += '<div class="line"></div>';
+        html += '<div class="transaction-details">'
+              +   '<div><span>Tranzaksiya IDsi:</span><span>' + esc(getVal('cart')) + '</span></div>'
+              +   '<div><span>Sana:</span><span>' + esc(getVal('sana')) + '</span></div>'
+              +   '<div><span>Xuzumak:</span><span>' + esc(xuzumakName) + '</span></div>'
+              +   '<div><span>Telefon raqam:</span><span>' + esc(getVal('telefon')) + '</span></div>'
+              + '</div>';
+        html += '<div class="item-header"><span>Tovarlar</span><span>Yig\'indisi</span></div>';
+
+        var counter = 1;
+        result.forEach(function (row) {
+            html += '<div class="item">'
+                  +   '<div class="item-number">' + counter + ')</div>'
+                  +   '<div class="item-name">' + esc(row.tovar) + '</div>'
+                  +   '<div class="item-quantity">' + esc(row.miqdori) + ' x ' + numberFormat(row.narxi) + '</div>'
+                  +   '<div class="item-price">' + numberFormat(row.jami) + '</div>'
+                  + '</div>';
+            counter++;
+        });
+
+        html += '<div class="line"></div>';
+
+        // Optional profnastil rows (kvadrat & nerjavinka removed)
+        var extra = '';
+        if (cleanNum(getVal('jamiprof')) > 0)    extra += '<div class="item"><span>Jami profnastil m:</span><span>' + esc(getVal('jamiprof')) + '</span></div>';
+        if (cleanNum(getVal('profkvadrat')) > 0) extra += '<div class="item"><span>Profnastil kvadrati:</span><span>' + esc(getVal('profkvadrat')) + '</span></div>';
+        if (extra) {
+            html += '<div>' + extra + '</div>';
+            html += '<div class="line"></div>';
+        }
+
+        // Totals in the requested order
+        var bugungiQarz = getVal('bugungi_qarz') !== '' ? getVal('bugungi_qarz') : getVal('qarz');
+
+        var totals = '';
+        totals += '<div class="item"><span>Jami:</span><span>' + numberFormat(getVal('hammasi')) + '</span></div>';
+        totals += '<div class="item"><span>Bugun to\'landi:</span><span>' + numberFormat(getVal('paid')) + '</span></div>';
+        if (intval(getVal('dollar')) > 0) {
+            totals += '<div class="item"><span>To\'landi (dollar):</span><span>' + numberFormat(getVal('dollar')) + '</span></div>';
+        }
+        totals += '<div class="item"><span>Oldingi qarz:</span><span>' + numberFormat(getVal('oldingi_qarz')) + '</span></div>';
+        totals += '<div class="item"><span>Bugungi qarz:</span><span>' + numberFormat(bugungiQarz) + '</span></div>';
+        totals += '<div class="line"></div>';
+        totals += '<div class="item"><span>Jami qolgan qarz miqdori:</span><span>' + numberFormat(getVal('jami_qarz')) + '</span></div>';
+        if (intval(getVal('qaytim')) > 0) {
+            totals += '<div class="item"><span>Qaytim:</span><span>' + numberFormat(getVal('qaytim')) + '</span></div>';
+        }
+
+        html += '<div class="total-section">' + totals + '</div>';
+
+        html += '<div class="line"></div>';
+        html += '<div class="footer">'
+              +   'Bizni tanlaganingiz uchun rahmat!<br><br>'
+              +   'Ulug\'bek +998 95 116 77 88 <br>'
+              +   '<span style="display: inline-block; padding-left: 45px;">+998 99 264 44 44</span>'
+              + '</div>';
+
+        document.getElementById('receipt').innerHTML = html;
+
+        window.addEventListener('load', function () {
+            window.print();
+        });
+    </script>
+</body>
+</html>
