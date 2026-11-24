@@ -182,18 +182,18 @@
 
         var xuzumakName = getVal('xuzumak') || getVal('mijoz');
 
-        // Clean logo markup (uses "uychi tunkafon.jpg" if available, otherwise crisp SVG)
+        // Clean logo markup with locked text width so "N" never overflows the border
         var logoHtml = '<div class="receipt-logo">'
             + '<img src="uychi tunkafon.jpg" alt="Uychi Tunkafon Markazi" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'block\';" />'
-            + '<svg style="display:none;" viewBox="0 0 960 350" xmlns="http://www.w3.org/2000/svg">'
+            + '<svg style="display:none;" viewBox="0 0 980 350" xmlns="http://www.w3.org/2000/svg">'
             +   '<polygon points="20,170 175,20 250,92 250,48 282,48 282,123 330,170 288,170 175,60 62,170" fill="#F97300"/>'
-            +   '<path d="M 255 169 A 92 92 0 1 0 175 307 L 575 307" fill="none" stroke="#031B59" stroke-width="28" stroke-linecap="butt"/>'
+            +   '<path d="M 255 169 A 92 92 0 1 0 175 307 L 635 307" fill="none" stroke="#031B59" stroke-width="28" stroke-linecap="butt"/>'
             +   '<rect x="136" y="184" width="28" height="28" fill="#031B59"/>'
             +   '<rect x="171" y="184" width="28" height="28" fill="#031B59"/>'
             +   '<rect x="136" y="219" width="28" height="28" fill="#031B59"/>'
             +   '<rect x="171" y="219" width="28" height="28" fill="#031B59"/>'
-            +   '<text x="228" y="244" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="74" fill="#031B59">UYCHI TUNKAFON</text>'
-            +   '<text x="598" y="316" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="46" letter-spacing="10" fill="#031B59">MARKAZI</text>'
+            +   '<text x="228" y="244" textLength="710" lengthAdjust="spacingAndGlyphs" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="70" fill="#031B59">UYCHI TUNKAFON</text>'
+            +   '<text x="663" y="318" textLength="275" lengthAdjust="spacingAndGlyphs" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="44" fill="#031B59">MARKAZI</text>'
             + '</svg>'
             + '</div>';
 
